@@ -41,32 +41,36 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_ = srv.Shutdown(ctx)
 	log.Println("Servidor finalizado")
 }
 
-// agora aceitando *sql.DB
 func index(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	items, err := listarProdutos(db)
 	if err != nil {
-		log.Printf("warn: falha ao buscar do BD, usando fallback: %v", err)
+		log.Printf("erro ao buscar produtos: %v", err)
+		http.Error(w, "erro ao buscar produtos", http.StatusInternalServerError)
+		return
 	}
 
 	if err := temp.ExecuteTemplate(w, "Index", items); err != nil {
+		log.Printf("erro ao renderizar template: %v", err)
 		http.Error(w, "erro ao renderizar template", http.StatusInternalServerError)
+		return
 	}
 }
 
 func listarProdutos(db *sql.DB) ([]produto.Produto, error) {
 	rows, err := db.Query(`
-		SELECT nome, descricao, preco, quantidade
-		FROM items
-		ORDER BY nome
-	`)
-
-	log.Print(rows)
+        SELECT id, nome, descricao, preco, quantidade
+        FROM items
+        ORDER BY nome
+    `)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +79,7 @@ func listarProdutos(db *sql.DB) ([]produto.Produto, error) {
 	var list []produto.Produto
 	for rows.Next() {
 		var p produto.Produto
-		if err := rows.Scan(&p.Nome, &p.Descricao, &p.Preco, &p.Quantidade); err != nil {
+		if err := rows.Scan(&p.Id, &p.Nome, &p.Descricao, &p.Preco, &p.Quantidade); err != nil {
 			return nil, err
 		}
 		list = append(list, p)
