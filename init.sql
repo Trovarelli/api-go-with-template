@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS items (
+CREATE TABLE IF NOT EXISTS produtos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     codigo VARCHAR(50) NOT NULL UNIQUE,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS items (
     quantidade INTEGER NOT NULL
 );
 
-INSERT INTO items (nome, codigo, descricao, preco, quantidade) VALUES
+INSERT INTO produtos (nome, codigo, descricao, preco, quantidade) VALUES
 ('Teclado Mecânico', 1, 'Teclado mecânico com retroiluminação', 150.00, 20),
 ('Mouse Óptico', 2, 'Mouse óptico sem fio', 80.00, 50),
 ('Monitor LED 24"', 3, 'Monitor LED Full HD de 24 polegadas', 700.00, 15),
